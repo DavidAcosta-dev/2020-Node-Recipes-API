@@ -2,3 +2,11 @@ language: node_js
 node_js: node
 services:
 - mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: zrRHtbH6QawZ5V0n2xVascUhGBZGQhL5EbveQiQDyGxVA9s7glGox4a5+81PVFazVX/hwn7+raYsGv4JoYUbow7x4nGXsDrjSoI7w0jbGBcTSGrmewLoAVhRpGmIi40Sx3uM5fqvCVipr8rX2BK9YjdWINkyA9ZCi25EQ3Or/N2pu3rB64x9Ndj75OGoA0AnM/H3hN4LdxJh9zujMqJ1lIwB5runw5VmXqeUwoq18hs06ljW3xLIcm7KmfKZYZT8X70J7aJBR5j4VnO4TDqMjFS2N6ASby6HmTglBQ04Ml4a9elzAIpeCdpAxjwnBIJ1ksjMjmD2F/PfSxD99gwdaSTOAJdSvzTqabbrSNd/vtpN4q8Dl21ZeCbn3jJnp66MAJEl3ljYvb+n0f4x4gSyKvkXMi1AE5v1FA30i5Q1LdsGw1VYtcTILxnEKQ4U/HI0LK2I6ELV8XZmb7AK5cwv/cP41liv3rDcN8y4Uxsv3l/3LUYBX8g/292DDii/w+mmgAAlc/QqKs9zQlCqI7jKvnrsgZHDZC86GCUAwisAgW6TEl8SQuDx2GyTqIQQo4Na9RkVkPS1jxvtPyAtSS9BHBIrs8zDdMI3lkCneyXc0/DZuYNhHwYzwIZRxvLsEeDgOCGwrhvODiY961MZkzdhUwarSNpe8NL4LLr1ABCIzIc=
+  app: fathomless-inlet-42861
+  on:
+    repo: Acosta816/2020-Node-Recipes-API
+  skip_cleanup: 'true'
