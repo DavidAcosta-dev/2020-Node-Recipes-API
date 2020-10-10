@@ -22,12 +22,12 @@ router.get('/', (req, res) => {
 
 
 // when a new shopping list item is posted, make sure it's
-// got required fields ('name' and 'checked'). if not,
+// got required fields ('name' and 'budget'). if not,
 // log an error and return a 400 status code. if okay,
 // add new item to ShoppingList and return it with a 201.
 router.post('/', jsonParser, (req, res) => {
     // ensure `name` and `budget` are in request body
-    const requiredFields = ['name', 'checked'];
+    const requiredFields = ['name', 'budget'];
     for (let i = 0; i < requiredFields.length; i++) {
         const field = requiredFields[i];
         if (!(field in req.body)) {
@@ -36,7 +36,7 @@ router.post('/', jsonParser, (req, res) => {
             return res.status(400).send(message);
         }
     }
-    const item = ShoppingList.create(req.body.name, req.body.checked);
+    const item = ShoppingList.create(req.body.name, req.body.budget);
     res.status(201).json(item);
 });
 
@@ -72,12 +72,13 @@ router.put('/:id', jsonParser, (req, res) => {
         return res.status(400).send(message);
     }
     console.log(`Updating shopping list item \`${req.params.id}\``);
-    const updatedItem = ShoppingList.update({
+    const updatedItem = {
         id: req.params.id,
         name: req.body.name,
         budget: req.body.budget
-    });
-    res.status(204).end();
+    };
+    console.log(updatedItem);
+    res.status(200).json(ShoppingList.update(updatedItem));//sending updated item to client for viewing convenience.
 })
 
 module.exports = router;

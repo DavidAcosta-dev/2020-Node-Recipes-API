@@ -19,8 +19,7 @@ router.post('/', (req, res) => {
         return res.status(400).send("please check your recipe object")
     }
     const { name, ingredients } = req.body;
-    Recipes.create(name, ingredients);
-    res.status(201).end();
+    res.status(201).json(Recipes.create(name, ingredients));
 })
 
 router.delete('/:id', (req, res) => {
@@ -42,8 +41,8 @@ router.put('/:id', (req, res) => {
     if (req.params.id !== req.body.id) {
         return res.status(400).send(`Request path id "${req.params.id}" does not match the body id "${req.body.id}"`);
     };//end of body.id === params.id match check
-    Recipes.update(req.body);
-    res.status(204).end();
+
+    res.status(200).json(Recipes.update(req.body));
 });
 
 //exporting the router
