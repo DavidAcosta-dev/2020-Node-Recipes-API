@@ -1,148 +1,97 @@
 
 const express = require('express');
-// we'll use morgan to log the HTTP layer
-const morgan = require('morgan');
-// we'll use body-parser's json() method to 
-// parse JSON data sent in requests to this app
-// const bodyParser = require('body-parser');
-
-// we import the ShoppingList model, which we'll
-// interact with in our GET endpoint
-const { ShoppingList, Recipes } = require('./models');
+const morgan = require('morgan');// we'll use morgan to log the HTTP layer
+// const { ShoppingList, Recipes } = require('./models'); //We abstracted this to each endpoints's router
 
 const app = express();
+
+//importing each respective router
+const recipesRouter = require('./Routers/recipesRouter');
+const shoppingListRouter = require('./Routers/shoppingListRouter');
 
 // log the http layer
 app.use(morgan('common'));
 app.use(express.json());
 
-// we're going to add some items to ShoppingList
-// so there's some data to look at. Note that 
-// normally you wouldn't do this. Usually your
-// server will simply expose the state of the
-// underlying database.
-ShoppingList.create('beans', 2);
-ShoppingList.create('tomatoes', 3);
-ShoppingList.create('peppers', 4);
+//pointing to our static resources via 2 different methods
+app.use(express.static('public'));
 
-Recipes.create("Nata's Vegan Horchata", ['dates', 'rice', 'milk cloth', 'cinnamon', 'anger']);
-Recipes.create("Oatmeal", ['milk', 'water', 'oats', 'brown sugar', 'apples']);
-Recipes.create("Narb's Red things", ['fear', 'red', 'things']);
-
-
-
-
-
-
-// when the root of this router is called with GET, return
-// all current ShoppingList items
-app.get('/shopping-list', (req, res) => {
-  res.json(ShoppingList.get());
-});
-
-app.post('/shopping-list', jsonParser, (req, res) => {
-  // ensure `name` and `budget` are in request body
-  const requiredFields = ['name', 'budget'];
-  for (let i = 0; i < requiredFields.length; i++) {
-    const field = requiredFields[i];
-    if (!(field in req.body)) {
-      const message = `Missing \`${field}\` in request body`
-      console.error(message);
-      return res.status(400).send(message);
-    }
-  }
-
-  const item = ShoppingList.create(req.body.name, req.body.budget);
-  res.status(201).json(item);
-});
-
-// when PUT request comes in with updated item, ensure has
-// required fields. also ensure that item id in url path, and
-// item id in updated item object match. if problems with any
-// of that, log error and send back status code 400. otherwise
-// call `ShoppingList.update` with updated item.
-app.put('/shopping-list/:id', jsonParser, (req, res) => {
-  const requiredFields = ['name', 'budget', 'id'];
-  for (let i = 0; i < requiredFields.length; i++) {
-    const field = requiredFields[i];
-    if (!(field in req.body)) {
-      const message = `Missing \`${field}\` in request body`
-      console.error(message);
-      return res.status(400).send(message);
-    }
-  }
-
-  if (req.params.id !== req.body.id) {
-    const message = `Request path id (${req.params.id}) and request body id (${req.body.id}) must match`;
-    console.error(message);
-    return res.status(400).send(message);
-  }
-  console.log(`Updating shopping list item \`${req.params.id}\``);
-  ShoppingList.update({
-    id: req.params.id,
-    name: req.body.name,
-    budget: req.body.budget
-  });
-  res.status(204).end();
-});
-
-// when DELETE request comes in with an id in path,
-// try to delete that item from ShoppingList.
-app.delete('/shopping-list/:id', (req, res) => {
-  ShoppingList.delete(req.params.id);
-  console.log(`Deleted shopping list item \`${req.params.ID}\``);
-  res.status(204).end();
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/views/index.html');
 });
 
 
-
-/**====================================================================================================END of SHOPPINGLIST ROUTES=============================== */
-
-
-
-
-app.get('/recipes', (req, res) => {
-  res.status(200).json(Recipes.get());
-})
-
-app.post('/recipes', (req, res) => {
-  console.log(req.body);
-  if (!req.body.name || (req.body.ingredients < 1)) {
-    return res.status(400).send("please check your recipe object")
-  }
-  const { name, ingredients } = req.body;
-  Recipes.create(name, ingredients);
-  res.status(201).end();
-})
-
-app.delete('/recipes/:id', (req, res) => {
-  console.log(req.params);
-  Recipes.delete(req.params.id);
-  res.status(203).end();
-})
-
-app.put('/recipes/:id', (req, res) => {
-  const requiredFields = ["name", "ingredients", "id"];
-  for (let i = 0; i < requiredFields.length; i++) {
-    const field = requiredFields[i];
-    if (!(field in req.body)) {
-      const message = `Missing "${field}" in request body..`;
-      console.error(message);
-      return res.status(400).send(message);
-    }
-  };//end of body fields check
-  if (req.params.id !== req.body.id) {
-    return res.status(400).send(`Request path id "${req.params.id}" does not match the body id "${req.body.id}"`);
-  };//end of body.id === params.id match check
-  Recipes.update(req.body);
-  res.status(204).end();
-})
+//Now we use the routers as middleware by supplying the '/path', then the imported router.
+app.use('/shopping-list', shoppingListRouter);
+app.use('/recipes', recipesRouter);
 
 
 
+/*
+both runServer and closeServer need to access the same server object,
+so we declare `server` here, and then when runServer runs, it assigns a value. */
+let server;
+
+//Starts our server and returns a Promise. In our test code, we need a way of asynchronously starting our server, since we'll be dealing w/ promises there.
+const runServer = () => {
+
+  const port = process.env.PORT || 8080;
+  return new Promise((resolve, reject) => {
+
+    server = app
+      .listen(port, () => {
+        console.log(`Your app is listening on port ${port}`);
+        resolve(server);
+      }) //end of .listen() which created and ran a server.
+      .on("error", err => {
+        reject(err);
+      });  //end of .on() which is like a more dynamic way of writing .catch()
+
+  }); //end of "new Promise". We wrapped the server creator (.listen()) in a promise because we need the asynchronisity of a promise for starting a server inside the testing modules.
+
+
+};//end of runServer
 
 
 
-app.listen(process.env.PORT || 8080, () => {
-  console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
-});
+// like `runServer`, this function also needs to return a promise.
+// `server.close` does not return a promise on its own, so we manually
+// create one.
+const closeServer = () => {
+
+
+  return new Promise((resolve, reject) => {
+    console.log("CLOSING SERVER");
+    server.close(err => {
+      if (err) {
+        reject(err);
+        return; //so we don't call resolve as well
+      }
+
+      //otherwise resolve() since it closed fine without errors
+      resolve();
+
+    });//end of server.close()
+
+  }); //end of "new Promise" wrapper
+
+
+}; //end of closeServer
+
+
+
+
+
+//require.main is assigned to a module when that module is run directly from Node like when the npm start script auto-runs "node server.js".
+//This is opposed to it being run from the testing module.
+
+//So it's possible to determine if a file is run directly from node by testing if require.main === module      (module refers to the current module, this module)
+if (require.main === module) {
+
+  runServer()
+    .catch(err => console.error(err));
+
+};
+
+
+module.exports = { app, runServer, closeServer };
