@@ -25,7 +25,7 @@ router.post('/', (req, res) => {
 router.delete('/:id', (req, res) => {
     console.log(req.params);
     Recipes.delete(req.params.id);
-    res.status(203).end();
+    res.status(204).end();
 })
 
 router.put('/:id', (req, res) => {

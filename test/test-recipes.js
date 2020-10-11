@@ -45,7 +45,7 @@ describe("Recipes", function () {
                 expect(res.body).to.include.keys(expectedKeys);
                 expect(res.body.ingredients).to.be.an('array');
                 expect(res.body.ingredients.length).to.be.at.least(1);
-                const recipeWithId = Object.assign(newRecipe, { "id": res.body.id });
+                const recipeWithId = Object.assign(newRecipe, { "id": res.body.id }); //or...   newRecipe.id = res.body.id
                 expect(res.body).to.deep.equal(recipeWithId);
             })
     });//end of POST/recipes
@@ -79,7 +79,7 @@ describe("Recipes", function () {
                 return chai.request(app).delete(`/recipes/${res.body.id}`);
             })
             .then(function (res) {
-                expect(res).to.have.status(203);
+                expect(res).to.have.status(204);
             })
     });//end of DELETE/recipes
 
